@@ -22,9 +22,7 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#include <sensor_msgs/JointState.h>
-#include <moveit/kinematic_constraints/utils.h>
-#include <moveit/robot_model_loader/robot_model_loader.h>
+#include <crustcrawler_controllers/kinematics.hpp>
 
 
 using namespace std;
@@ -38,19 +36,7 @@ double xc = 0.0, yc = 0.0, zc = 0.0, sanch_x = 0.796, sanch_y = 0.843, sanch_z =
 Eigen::MatrixXd points_robot(18,4),points_camera(18,4);
 aruco::CameraParameters camera_char;
 vector<aruco::Marker> markers;
-
-
-Eigen::VectorXd left_arm_joints_position(7), joint_values(7);
 std::vector<double> joints_values(7);
-
-void jocommCallback(sensor_msgs::JointState jo_state)
-{
-    left_arm_joints_position(0) = jo_state.position[4]; left_arm_joints_position(1) = jo_state.position[5]; left_arm_joints_position(2) = jo_state.position[2];
-    left_arm_joints_position(3) = jo_state.position[3]; left_arm_joints_position(4) = jo_state.position[6]; left_arm_joints_position(5) = jo_state.position[7];
-    left_arm_joints_position(6) = jo_state.position[8];
-    for (int i = 0; i < joints_values.size(); i++)
-        joints_values[i] = left_arm_joints_position(i);
-}
 
 void imageCb(const sensor_msgs::ImageConstPtr& msg)
 {
@@ -124,31 +110,24 @@ void depthimageCb(const sensor_msgs::ImageConstPtr& depth_msg){
 
 int main(int argc, char** argv)
 {
-    ros::init(argc, argv, "marker_detection");
+    ros::init(argc, argv, "crustcrawler_kinect_transformation_mat");
     ros::NodeHandle node;
     image_transport::ImageTransport it_(node);
     camera_char.readFromXMLFile("/home/mukhtar/git/catkin_ws/src/automatic_camera_robot_cal/data/camera_param.xml");
     image_transport::Subscriber in_image = it_.subscribe("/camera/rgb/image_raw",1,imageCb);
     ros::Subscriber in_info_image = node.subscribe<sensor_msgs::CameraInfoConstPtr>("/camera/rgb/camera_info",1,infoimageCb);
     image_transport::Subscriber in_depth_image = it_.subscribe("/camera/depth/image_raw",1,depthimageCb);
-    ros::Subscriber sub_jointmsg;
-    sub_jointmsg = node.subscribe<sensor_msgs::JointState>("/robot/joint_states",1,jocommCallback);
     ros::AsyncSpinner my_spinner(4);
     my_spinner.start();
-    Eigen::VectorXd current_position(3);
-    robot_model_loader::RobotModelLoader robot_model_loader("robot_description");
-    robot_model::RobotModelPtr robot_model = robot_model_loader.getModel();
-    robot_state::RobotState my_robot_state(robot_model);
-
-    std::vector <std::string> variable_names(7);
-    variable_names[0] = "left_s0"; variable_names[1] = "left_s1"; variable_names[2] = "left_e0";
-    variable_names[3] = "left_e1"; variable_names[4] = "left_w0"; variable_names[5] = "left_w1";
-    variable_names[6] = "left_w2";
-
+    double tmp[] = {0.0, -1.5708, 1.5708, 0.0, 0.0, 0.0, 0.0, 0.0};
+    std::vector<double> initial_joint_values(tmp, tmp + 8);
+    unsigned char tmp1[] = {1, 2, 3, 4, 5, 6, 7};
+    std::vector<unsigned char> reduced_actuator_id(tmp1, tmp1 + 7);
     std::string input;
-
-    //do the porcess 8 times to save 8 robot left end effector positions
-    Eigen::VectorXd my_values;
+    Real robot;
+    Kinematics km;
+    std::vector<double> current_position;
+    //do the porcess 18 times to save 18 robot left end effector positions
     int positions = 0;
     while (positions < 18){
         std::cout << "move the marker to another point and type (next) ..... " << std::endl;
@@ -157,17 +136,13 @@ int main(int argc, char** argv)
             while(xc != xc || yc != yc || zc != zc);
             points_camera(positions,0) = xc; points_camera(positions,1) = yc;
             points_camera(positions,2) = zc; points_camera(positions,3) = 1.0;
-            my_robot_state.setVariablePositions(variable_names,joints_values);
-            my_robot_state.copyJointGroupPositions(my_robot_state.getRobotModel()->getJointModelGroup("left_arm"),my_values);
-            current_position = my_robot_state.getGlobalLinkTransform("left_gripper").translation();
-            points_robot(positions,0) = current_position(0); points_robot(positions,1) = current_position(1);
-            points_robot(positions,2) = current_position(2); points_robot(positions,3) = 1.0;
-
-            /*std::cout << "X is: " << current_position(0) << std::endl
-                         << "Y is: " << current_position(1) << std::endl
-                            << "Z is: " << current_position(2) << std::endl
-                               << "*************************************************" << std::endl;
-            //std::cout << my_robot_state.getGlobalLinkTransform("left_gripper").translation() << std::endl;*/
+            joints_values = robot.getArm().get_joint_values(reduced_actuator_id);
+            for (int i = 0; i < joints_values.size(); i++) {
+                joints_values[i] = M_PI * joints_values[i] - initial_joint_values[i];
+            }
+            current_position = km.forward_model(joints_values);
+            points_robot(positions,0) = current_position[0]; points_robot(positions,1) = current_position[1];
+            points_robot(positions,2) = current_position[2]; points_robot(positions,3) = 1.0;
             std::cout << "camera point is: " << std::endl << points_camera.row(positions) << std::endl << "*************************************************" << std::endl;
             std::cout << "robot point is: " << std::endl << points_robot.row(positions) << std::endl << "*************************************************" << std::endl;
             positions += 1;
