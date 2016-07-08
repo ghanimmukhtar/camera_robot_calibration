@@ -17,7 +17,7 @@
           left_tip_name:=$(arg left_tip_name)
           right_tip_name:=$(arg right_tip_name)"/>
 
-  <node name="calibration_with_marker" pkg="automatic_camera_robot_cal" type="marker_detection" output="screen">
+  <node name="calibration_with_marker" pkg="automatic_camera_robot_cal" type="crustcrawler_kinect_transformation_mat" output="screen">
         <!--remap from="/joint_states" to="/robot/joint_states"/-->
   </node>
 

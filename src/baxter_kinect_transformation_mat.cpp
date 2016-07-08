@@ -30,12 +30,13 @@
 using namespace std;
 using namespace cv;
 
+int no_points = 28;
 Mat pic;
 sensor_msgs::ImageConstPtr rgb_msg;
 sensor_msgs::CameraInfoConstPtr info_msg;
 float my_x,my_y;
 double xc = 0.0, yc = 0.0, zc = 0.0, sanch_x = 0.796, sanch_y = 0.843, sanch_z = 0.531;
-Eigen::MatrixXd points_robot(18,4),points_camera(18,4);
+Eigen::MatrixXd points_robot(no_points,4),points_camera(no_points,4);
 aruco::CameraParameters camera_char;
 vector<aruco::Marker> markers;
 
@@ -94,7 +95,7 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 
         cout << "c4_x value in image is: " << (int) markers[0][3].x << endl;
 	cout << "c4_y value in image is: " << (int) markers[0][3].y << endl;*/
-        circle(pic, cv::Point(markers[0][3].x, markers[0][3].y), 10, CV_RGB(255,0,0));
+        circle(pic, cv::Point(markers[0][0].x, markers[0][0].y), 10, CV_RGB(255,0,0));
     	//cout << "translation vector is: " << markers[0].Tvec << endl;
     }
     imshow("ShowMarker", pic);
@@ -127,7 +128,7 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "baxter_kinect_transformation_mat");
     ros::NodeHandle node;
     image_transport::ImageTransport it_(node);
-    camera_char.readFromXMLFile("/home/mukhtar/git/catkin_ws/src/automatic_camera_robot_cal/data/camera_param.xml");
+    camera_char.readFromXMLFile("/home/mukhtar/git/catkin_ws/src/automatic_camera_robot_cal/data/camera_param_baxter.xml");
     image_transport::Subscriber in_image = it_.subscribe("/camera/rgb/image_raw",1,imageCb);
     ros::Subscriber in_info_image = node.subscribe<sensor_msgs::CameraInfoConstPtr>("/camera/rgb/camera_info",1,infoimageCb);
     image_transport::Subscriber in_depth_image = it_.subscribe("/camera/depth/image_raw",1,depthimageCb);
@@ -147,10 +148,10 @@ int main(int argc, char** argv)
 
     std::string input;
 
-    //do the porcess 8 times to save 8 robot left end effector positions
+    //do the porcess no_points times to save no_points robot left end effector positions
     Eigen::VectorXd my_values;
     int positions = 0;
-    while (positions < 18){
+    while (positions < no_points){
         std::cout << "move the marker to another point and type (next) ..... " << std::endl;
         std::cin >> input;
         if (input == "next"){
