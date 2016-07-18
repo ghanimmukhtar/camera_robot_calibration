@@ -76,27 +76,27 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
     //cout << "is markers empty? " << markers.empty() << endl;
     //cout << "marker is valid: " << markers[0].isValid() << endl;
     if (!markers.empty()){
-	markers[0].draw(pic,cv::Scalar(94.0, 206.0, 165.0, 0.0));
-    	markers[0].calculateExtrinsics(0.04,camera_char,false);
-    	//my_detector.draw(pic,markers);
-    	//cout << "markers size is: " << markers.size() << endl;
-    	//cout << "is markers empty? " << markers.empty() << endl;
+    markers[0].draw(pic,cv::Scalar(94.0, 206.0, 165.0, 0.0));
+        markers[0].calculateExtrinsics(0.04,camera_char,false);
+        //my_detector.draw(pic,markers);
+        //cout << "markers size is: " << markers.size() << endl;
+        //cout << "is markers empty? " << markers.empty() << endl;
         my_x = (int) markers[0][0].x;
         my_y = (int) markers[0][0].y;
         /*cout << "c1_x value in image is: " << (int) markers[0][0].x << endl;
-	cout << "c1_y value in image is: " << (int) markers[0][0].y << endl;
+    cout << "c1_y value in image is: " << (int) markers[0][0].y << endl;
         circle(pic, cv::Point(my_x, my_y), 10, CV_RGB(255,0,0));
 
         cout << "c2_x value in image is: " << (int) markers[0][1].x << endl;
-	cout << "c2_y value in image is: " << (int) markers[0][1].y << endl;
+    cout << "c2_y value in image is: " << (int) markers[0][1].y << endl;
 
         cout << "c3_x value in image is: " << (int) markers[0][2].x << endl;
-	cout << "c3_y value in image is: " << (int) markers[0][2].y << endl;
+    cout << "c3_y value in image is: " << (int) markers[0][2].y << endl;
 
         cout << "c4_x value in image is: " << (int) markers[0][3].x << endl;
-	cout << "c4_y value in image is: " << (int) markers[0][3].y << endl;*/
+    cout << "c4_y value in image is: " << (int) markers[0][3].y << endl;*/
         circle(pic, cv::Point(markers[0][0].x, markers[0][0].y), 10, CV_RGB(255,0,0));
-    	//cout << "translation vector is: " << markers[0].Tvec << endl;
+        //cout << "translation vector is: " << markers[0].Tvec << endl;
     }
     imshow("ShowMarker", pic);
     waitKey(1);
@@ -129,9 +129,9 @@ int main(int argc, char** argv)
     ros::NodeHandle node;
     image_transport::ImageTransport it_(node);
     camera_char.readFromXMLFile("/home/mukhtar/git/catkin_ws/src/automatic_camera_robot_cal/data/camera_param_baxter.xml");
-    image_transport::Subscriber in_image = it_.subscribe("/camera/rgb/image_raw",1,imageCb);
+    image_transport::Subscriber in_image = it_.subscribe("/camera/rgb/image_rect_color",1,imageCb);
     ros::Subscriber in_info_image = node.subscribe<sensor_msgs::CameraInfoConstPtr>("/camera/rgb/camera_info",1,infoimageCb);
-    image_transport::Subscriber in_depth_image = it_.subscribe("/camera/depth/image_raw",1,depthimageCb);
+    image_transport::Subscriber in_depth_image = it_.subscribe("/camera/depth_registered/sw_registered/image_rect",1,depthimageCb);
     ros::Subscriber sub_jointmsg;
     sub_jointmsg = node.subscribe<sensor_msgs::JointState>("/robot/joint_states",1,jocommCallback);
     ros::AsyncSpinner my_spinner(4);
@@ -153,26 +153,24 @@ int main(int argc, char** argv)
     int positions = 0;
     while (positions < no_points){
         std::cout << "move the marker to another point and type (next) ..... " << std::endl;
-        std::cin >> input;
-        if (input == "next"){
-            while(xc != xc || yc != yc || zc != zc);
-            points_camera(positions,0) = xc; points_camera(positions,1) = yc;
-            points_camera(positions,2) = zc; points_camera(positions,3) = 1.0;
-            my_robot_state.setVariablePositions(variable_names,joints_values);
-            my_robot_state.copyJointGroupPositions(my_robot_state.getRobotModel()->getJointModelGroup("left_arm"),my_values);
-            current_position = my_robot_state.getGlobalLinkTransform("left_gripper").translation();
-            points_robot(positions,0) = current_position(0); points_robot(positions,1) = current_position(1);
-            points_robot(positions,2) = current_position(2); points_robot(positions,3) = 1.0;
+        std::cin.ignore();
+        while(xc != xc || yc != yc || zc != zc);
+        points_camera(positions,0) = xc; points_camera(positions,1) = yc;
+        points_camera(positions,2) = zc; points_camera(positions,3) = 1.0;
+        my_robot_state.setVariablePositions(variable_names,joints_values);
+        my_robot_state.copyJointGroupPositions(my_robot_state.getRobotModel()->getJointModelGroup("left_arm"),my_values);
+        current_position = my_robot_state.getGlobalLinkTransform("left_gripper_base").translation();
+        points_robot(positions,0) = current_position(0); points_robot(positions,1) = current_position(1);
+        points_robot(positions,2) = current_position(2); points_robot(positions,3) = 1.0;
 
-            /*std::cout << "X is: " << current_position(0) << std::endl
-                         << "Y is: " << current_position(1) << std::endl
-                            << "Z is: " << current_position(2) << std::endl
-                               << "*************************************************" << std::endl;
-            //std::cout << my_robot_state.getGlobalLinkTransform("left_gripper").translation() << std::endl;*/
-            std::cout << "camera point is: " << std::endl << points_camera.row(positions) << std::endl << "*************************************************" << std::endl;
-            std::cout << "robot point is: " << std::endl << points_robot.row(positions) << std::endl << "*************************************************" << std::endl;
-            positions += 1;
-        }
+        /*std::cout << "X is: " << current_position(0) << std::endl
+                     << "Y is: " << current_position(1) << std::endl
+                        << "Z is: " << current_position(2) << std::endl
+                           << "*************************************************" << std::endl;
+        //std::cout << my_robot_state.getGlobalLinkTransform("left_gripper").translation() << std::endl;*/
+        std::cout << "camera point is: " << std::endl << points_camera.row(positions) << std::endl << "*************************************************" << std::endl;
+        std::cout << "robot point is: " << std::endl << points_robot.row(positions) << std::endl << "*************************************************" << std::endl;
+        positions += 1;
     }
     std::cout << "camera_points are: " << std::endl
                  << points_camera << std::endl
