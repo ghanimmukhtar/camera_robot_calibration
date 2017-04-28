@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
+  crustcrawler_core_msgs
 )
 
 include_directories(

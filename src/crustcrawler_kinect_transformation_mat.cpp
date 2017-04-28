@@ -22,14 +22,15 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#include <crustcrawler_controllers/kinematics.hpp>
+//#include <crustcrawler_controllers/kinematics.hpp>
+#include <crustcrawler_core_msgs/EndpointState.h>
 
 
 using namespace std;
 using namespace cv;
 
 Mat pic;
-int no_points = 28;
+int no_points = 12;
 sensor_msgs::ImageConstPtr rgb_msg;
 sensor_msgs::CameraInfoConstPtr info_msg;
 float my_x,my_y;
@@ -37,7 +38,7 @@ double xc = 0.0, yc = 0.0, zc = 0.0, sanch_x = 0.796, sanch_y = 0.843, sanch_z =
 Eigen::MatrixXd points_robot(no_points,4),points_camera(no_points,4);
 aruco::CameraParameters camera_char;
 vector<aruco::Marker> markers;
-std::vector<double> joints_values(7);
+std::vector<double> joints_values(7), current_position(3);
 
 void imageCb(const sensor_msgs::ImageConstPtr& msg)
 {
@@ -69,8 +70,8 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
     	//cout << "is markers empty? " << markers.empty() << endl;
         //my_x = (int) ((markers[0][3].x + markers[0][2].x)/2);
         //my_y = (int) ((markers[0][3].y + markers[0][2].y)/2);
-        my_x = (int) markers[0][1].x;
-        my_y = (int) markers[0][1].y;
+        my_x = (int) (markers[0][1].x + markers[0][3].x)/2.0;
+        my_y = (int) (markers[0][1].y + markers[0][3].y)/2.0;
         /*cout << "c1_x value in image is: " << (int) markers[0][0].x << endl;
 	cout << "c1_y value in image is: " << (int) markers[0][0].y << endl;
         circle(pic, cv::Point(my_x, my_y), 10, CV_RGB(255,0,0));
@@ -84,7 +85,7 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
         cout << "c4_x value in image is: " << (int) markers[0][3].x << endl;
 	cout << "c4_y value in image is: " << (int) markers[0][3].y << endl;*/
         //circle(pic, cv::Point((markers[0][3].x + markers[0][2].x)/2, (markers[0][3].y + markers[0][2].y)/2), 10, CV_RGB(255,0,0));
-        circle(pic, cv::Point(markers[0][1].x, markers[0][1].y), 10, CV_RGB(255,0,0));
+        circle(pic, cv::Point((markers[0][1].x + markers[0][3].x)/2.0, (markers[0][1].y + markers[0][3].y)/2.0), 10, CV_RGB(255,0,0));
     	//cout << "translation vector is: " << markers[0].Tvec << endl;
     }
     imshow("ShowMarker", pic);
@@ -112,6 +113,12 @@ void depthimageCb(const sensor_msgs::ImageConstPtr& depth_msg){
     }
 }
 
+void eefCb(const crustcrawler_core_msgs::EndpointState::ConstPtr& eef_msg){
+    current_position[0] = eef_msg->pose.position.x;
+    current_position[1] = eef_msg->pose.position.y;
+    current_position[2] = eef_msg->pose.position.z;
+}
+
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "crustcrawler_kinect_transformation_mat");
@@ -120,7 +127,10 @@ int main(int argc, char** argv)
     camera_char.readFromXMLFile("/home/ghanim/git/catkin_ws/src/automatic_camera_robot_cal/data/camera_param_crustcrawler.xml");
     image_transport::Subscriber in_image = it_.subscribe("/camera/rgb/image_raw",1,imageCb);
     ros::Subscriber in_info_image = node.subscribe<sensor_msgs::CameraInfoConstPtr>("/camera/rgb/camera_info",1,infoimageCb);
+    ros::Subscriber Endpoint_state_sub = node.subscribe<crustcrawler_core_msgs::EndpointState>("/crustcrawler/endpoint_state", 10, eefCb);
     image_transport::Subscriber in_depth_image = it_.subscribe("/camera/depth_registered/image_raw",1,depthimageCb);
+
+
     ros::AsyncSpinner my_spinner(4);
     my_spinner.start();
     double tmp[] = {0.0, -1.5708, 1.5708, 0.0, 0.0, 0.0, 0.0, 0.0};
@@ -128,9 +138,7 @@ int main(int argc, char** argv)
     unsigned char tmp1[] = {1, 2, 3, 4, 5, 6, 7};
     std::vector<unsigned char> reduced_actuator_id(tmp1, tmp1 + 7);
     std::string input;
-    Real robot;
-    Kinematics km;
-    std::vector<double> current_position;
+
     //do the porcess no_points times to save no_points robot left end effector positions
     int positions = 0;
     while (positions < no_points){
@@ -139,11 +147,7 @@ int main(int argc, char** argv)
         while(xc != xc || yc != yc || zc != zc);
         points_camera(positions,0) = xc; points_camera(positions,1) = yc;
         points_camera(positions,2) = zc; points_camera(positions,3) = 1.0;
-        joints_values = robot.getArm().get_joint_values(reduced_actuator_id);
-        for (int i = 0; i < joints_values.size(); i++) {
-            joints_values[i] = M_PI * joints_values[i] - initial_joint_values[i];
-        }
-        current_position = km.forward_model(joints_values);
+
         points_robot(positions,0) = current_position[0]; points_robot(positions,1) = current_position[1];
         points_robot(positions,2) = current_position[2]; points_robot(positions,3) = 1.0;
         std::cout << "camera point is: " << std::endl << points_camera.row(positions) << std::endl << "*************************************************" << std::endl;
