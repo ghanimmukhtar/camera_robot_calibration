@@ -124,7 +124,7 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "crustcrawler_kinect_transformation_mat");
     ros::NodeHandle node;
     image_transport::ImageTransport it_(node);
-    camera_char.readFromXMLFile("/home/ghanim/git/catkin_ws/src/automatic_camera_robot_cal/data/camera_param_crustcrawler.xml");
+    camera_char.readFromXMLFile("/home/mukhtar/git/catkin_ws/src/automatic_camera_robot_cal/data/camera_param_crustcrawler.xml");
     image_transport::Subscriber in_image = it_.subscribe("/camera/rgb/image_raw",1,imageCb);
     ros::Subscriber in_info_image = node.subscribe<sensor_msgs::CameraInfoConstPtr>("/camera/rgb/camera_info",1,infoimageCb);
     ros::Subscriber Endpoint_state_sub = node.subscribe<crustcrawler_core_msgs::EndpointState>("/crustcrawler/endpoint_state", 10, eefCb);
