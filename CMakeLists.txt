@@ -10,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
-  crustcrawler_core_msgs
+  #crustcrawler_core_msgs
 )
 
 include_directories(
@@ -66,8 +66,8 @@ target_link_libraries(contour_detection ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 add_executable(baxter_kinect_transformation_mat src/baxter_kinect_transformation_mat.cpp)
 target_link_libraries(baxter_kinect_transformation_mat /usr/local/lib/libaruco.so aruco ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${catkin_LIBRARIES} rgbd_utils image_processing)
 
-add_executable(crustcrawler_kinect_transformation_mat src/crustcrawler_kinect_transformation_mat.cpp)
-target_link_libraries(crustcrawler_kinect_transformation_mat /usr/local/lib/libaruco.so aruco ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${catkin_LIBRARIES} rgbd_utils image_processing real_controllers dynamixel cafer_core)
+#add_executable(crustcrawler_kinect_transformation_mat src/crustcrawler_kinect_transformation_mat.cpp)
+#target_link_libraries(crustcrawler_kinect_transformation_mat /usr/local/lib/libaruco.so aruco ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${catkin_LIBRARIES} rgbd_utils image_processing real_controllers dynamixel cafer_core)
 
 add_executable(auto_cal_leni_method src/auto_cal_leni_method.cpp)
 target_link_libraries(auto_cal_leni_method ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} rgbd_utils image_processing)
