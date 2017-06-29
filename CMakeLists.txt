@@ -1,73 +1,66 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(automatic_camera_robot_cal)
+project(camera_robot_calibration)
 
 find_package(catkin REQUIRED COMPONENTS
-  cv_bridge
-  moveit_ros_planning_interface
-  image_geometry
-  image_transport
-  roscpp
-  rospy
-  sensor_msgs
-  std_msgs
-  #crustcrawler_core_msgs
-)
-
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -fPIC")
-
-catkin_package(
+        geometry_msgs
+        image_geometry
+        image_transport
+        roscpp
+        rospy
+        sensor_msgs
+        std_msgs
+        #  genmsg
+        pcl_conversions
+        cv_bridge
+        message_filters
+  	tf
+  	crustcrawler_core_msgs
+  	baxter_core_msgs
 )
 
 find_package(OpenCV REQUIRED COMPONENTS features2d nonfree)
-
-# EIGEN
 find_package(Eigen3 REQUIRED)
-include_directories(${EIGEN3_INCLUDE_DIR})
-
 find_package(Boost REQUIRED COMPONENTS system )
 find_package(PCL 1.7 REQUIRED)
-
-include_directories(/usr/local/include)
-include_directories(${PCL_INCLUDE_DIRS})
-
-link_directories(${PCL_LIBRARY_DIRS})
-add_definitions(${PCL_DEFINITIONS})
-
 find_path(RGBD_UTILS_INCLUDE_DIR rgbd_utils/rgbd_subscriber.hpp)
 find_library(RGBD_UTILS_LIBRARY NAMES rgbd_utils)
 
-find_path(IMAGE_PROCESSING_INCLUDE_DIR image_processing/MotionDetection.h)
-find_library(IMAGE_PROCESSING_LIBRARY NAMES image_processing)
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -fPIC")
+#find_package(aruco)
+
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES camera_robot_calibration
+  CATKIN_DEPENDS geometry_msgs image_geometry image_transport roscpp rospy sensor_msgs std_msgs pcl_conversions cv_bridge tf crustcrawler_core_msgs baxter_core_msgs
+  #CATKIN_DEPENDS geometry_msgs image_geometry image_transport roscpp rospy sensor_msgs std_msgs pcl_conversions cv_bridge tf crustcrawler_core_msgs baxter_core_msgs 
+)
+
+## Specify additional locations of header files
+## Your package locations should be listed before other locations
+## include_directories(include /usr/local/include ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${PCL_INCLUDE_DIR})
+include_directories(include /usr/local/include)
+include_directories(
+        ${catkin_INCLUDE_DIR}
+)
+
+## Declare a C++ library
+add_library(camera_robot_calibration
+        src/camera_robot_calibration.cpp
+        src/libs/helpers_methods.cpp
+        )
+target_link_libraries(camera_robot_calibration /usr/local/lib/libaruco.so ${catkin_LIBRARIES} )
+
+## Mark executables and/or libraries for installation
+install(TARGETS camera_robot_calibration
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
 
 
-
-add_executable(automatic_calibration src/automatic_calibration.cpp)
-target_link_libraries(automatic_calibration ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-
-add_executable(image_convert src/image_convert.cpp)
-target_link_libraries(image_convert ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-
-add_executable(template_matching src/template_matching.cpp)
-target_link_libraries(template_matching ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-
-add_executable(shape_detection src/shape_detection.cpp)
-target_link_libraries(shape_detection ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-
-add_executable(get_rotate_quat src/get_rotate_quat.cpp)
-target_link_libraries(get_rotate_quat ${catkin_LIBRARIES})
-
-add_executable(contour_detection src/contour_detection.cpp)
-target_link_libraries(contour_detection ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-
-add_executable(baxter_kinect_transformation_mat src/baxter_kinect_transformation_mat.cpp)
-target_link_libraries(baxter_kinect_transformation_mat /usr/local/lib/libaruco.so aruco ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${catkin_LIBRARIES} rgbd_utils image_processing)
-
-#add_executable(crustcrawler_kinect_transformation_mat src/crustcrawler_kinect_transformation_mat.cpp)
-#target_link_libraries(crustcrawler_kinect_transformation_mat /usr/local/lib/libaruco.so aruco ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${catkin_LIBRARIES} rgbd_utils image_processing real_controllers dynamixel cafer_core)
-
-add_executable(auto_cal_leni_method src/auto_cal_leni_method.cpp)
-target_link_libraries(auto_cal_leni_method ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} rgbd_utils image_processing)
+## Mark cpp header files for installation
+install(DIRECTORY include/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
