@@ -39,7 +39,7 @@ struct Parameters {
     Eigen::VectorXd robot_eef_rpy_pose;
     Eigen::Vector3d robot_eef_position;
     Eigen::Vector3d robot_eef_rpy_orientation;
-    int number_of_points = 10;
+    int number_of_points = 10, number_of_valid_point = 0;
 
     cv_bridge::CvImagePtr cv_ptr;
     cv::Mat raw_input_picture;
@@ -63,6 +63,7 @@ struct Parameters {
     tf::Quaternion transformation_quaternion;
 
     bool camera_topics_good = false;
+
 };
 class Data_config{
 public:
@@ -194,6 +195,10 @@ public:
         return params.camera_topics_good;
     }
 
+    int& get_number_of_validated_points(){
+        return params.number_of_valid_point;
+    }
+
     ///setters
     ///
     void set_parameters(XmlRpc::XmlRpcValue parameters){
@@ -306,6 +311,10 @@ public:
 
     void set_camera_topics_status(bool status){
         params.camera_topics_good = status;
+    }
+
+    void set_number_of_validated_point(int i){
+        params.number_of_valid_point = i;
     }
 };
 
