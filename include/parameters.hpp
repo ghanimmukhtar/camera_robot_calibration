@@ -207,8 +207,8 @@ public:
 
     void set_number_of_points(int number_points){
         params.number_of_points = number_points;
-        params.point_in_camera_frame.resize(params.number_of_points, 4);
-        params.point_in_robot_frame.resize(params.number_of_points, 4);
+        params.markers_positions_camera_frame.resize(params.number_of_points, 4);
+        params.markers_positions_robot_frame.resize(params.number_of_points, 4);
     }
 
     void set_robot_eef_pose(geometry_msgs::Pose& eef_pose){
