@@ -39,6 +39,7 @@ struct Parameters {
     Eigen::VectorXd robot_eef_rpy_pose;
     Eigen::Vector3d robot_eef_position;
     Eigen::Vector3d robot_eef_rpy_orientation;
+    Eigen::Vector4d quaternion_vector;
     int number_of_points = 10, number_of_valid_point = 0;
 
     cv_bridge::CvImagePtr cv_ptr;
@@ -57,9 +58,9 @@ struct Parameters {
 
     std::shared_ptr<rgbd_utils::RGBD_to_Pointcloud> converter;
     sensor_msgs::PointCloud2 ptcl_msg;
-    Eigen::MatrixX4d markers_positions_camera_frame, markers_positions_robot_frame;
+    Eigen::MatrixXd markers_positions_camera_frame, markers_positions_robot_frame;
     Eigen::Matrix4d transformation_matrix;
-    Eigen::Vector3d transformation_RPY;
+    Eigen::Vector3d transformation_RPY, transformation_position;
     tf::Quaternion transformation_quaternion;
 
     bool camera_topics_good = false;
@@ -171,11 +172,11 @@ public:
         return params.ptcl_msg;
     }
 
-    Eigen::MatrixX4d& get_markers_positions_camera_frame(){
+    Eigen::MatrixXd& get_markers_positions_camera_frame(){
         return params.markers_positions_camera_frame;
     }
 
-    Eigen::MatrixX4d& get_markers_positions_robot_frame(){
+    Eigen::MatrixXd& get_markers_positions_robot_frame(){
         return params.markers_positions_robot_frame;
     }
 
@@ -187,8 +188,18 @@ public:
         return params.transformation_RPY;
     }
 
+    Eigen::Vector3d& get_transformation_position(){
+        return params.transformation_position;
+    }
+
     tf::Quaternion& get_transformation_quaternion(){
         return params.transformation_quaternion;
+    }
+
+    Eigen::Vector4d& get_transformation_quaternion_vector(){
+        params.quaternion_vector << params.transformation_quaternion.getX(), params.transformation_quaternion.getY(),
+                params.transformation_quaternion.getZ(), params.transformation_quaternion.getW();
+        return params.quaternion_vector;
     }
 
     bool get_camera_topics_status(){
@@ -303,6 +314,10 @@ public:
 
     void set_transformation_RPY(Eigen::Vector3d RPY){
         params.transformation_RPY = RPY;
+    }
+
+    void set_transformation_position(Eigen::Vector3d position){
+        params.transformation_position = position;
     }
 
     void set_transformation_quaternion(tf::Quaternion quat){

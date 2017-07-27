@@ -65,29 +65,21 @@ void CALIBRATOR::acquire_points(){
                                                               _global_parameters.get_camera_character(),
                                                               0.1);
         _global_parameters.get_marker_centers().resize(_global_parameters.get_markers().size());
-
-        ROS_WARN_STREAM("CALIBRATOR: I found markers, number of them is: " << _global_parameters.get_markers().size());
-
         for(size_t i = 0; i < _global_parameters.get_markers().size(); i++){
-
             _global_parameters.get_markers()[i].draw(_global_parameters.get_raw_original_picture(), cv::Scalar(94.0, 206.0, 165.0, 0.0));
-
             _global_parameters.get_markers()[i].calculateExtrinsics(_global_parameters.get_marker_size(),
                                                                     _global_parameters.get_camera_character(),
                                                                     false);
-
             _global_parameters.get_marker_centers()[i] << (int) (_global_parameters.get_markers()[i][0].x + _global_parameters.get_markers()[i][2].x)/2,
                     (int) (_global_parameters.get_markers()[i][0].y + _global_parameters.get_markers()[i][2].y)/2;
-
             cv::circle(_global_parameters.get_raw_original_picture(), cv::Point(_global_parameters.get_marker_centers()[i](0),
                                                                                 _global_parameters.get_marker_centers()[i](1)),
                                                                                 10,
                                                                                 CV_RGB(255, 0, 0));
-
                        _global_parameters.set_rgb_cloud_converter(_global_parameters.get_depth_msg(),
                                                                   _global_parameters.get_rgb_msg(),
                                                                   _global_parameters.get_camera_info_msg());
-                    _global_parameters.set_pointcloud_msg(_global_parameters.get_rgb_cloud_converter().get_pointcloud());
+            _global_parameters.set_pointcloud_msg(_global_parameters.get_rgb_cloud_converter().get_pointcloud());
 
             pcl::PointCloud<pcl::PointXYZRGBA>::Ptr
                     input_cloud(new pcl::PointCloud<pcl::PointXYZRGBA>);
@@ -95,14 +87,21 @@ void CALIBRATOR::acquire_points(){
             for(size_t q = 0; q < _global_parameters.get_marker_centers().size(); q++){
                 double x = _global_parameters.get_marker_centers()[q](0), y = _global_parameters.get_marker_centers()[q](1);
                 pcl::PointXYZRGBA pt_marker = input_cloud->at(std::round(x) + std::round(y) * input_cloud->width);
-                if(pt_marker.x == pt_marker.x && pt_marker.y == pt_marker.y && pt_marker.z == pt_marker.z){
-                    ROS_WARN_STREAM("CALIBRATOR: The marker 3D position is: " << pt_marker.x << ", " << pt_marker.y << ", " << pt_marker.z);
-                    _global_parameters.get_markers_positions_camera_frame() << pt_marker.x, pt_marker.y, pt_marker.z , 1.0;
-
+                if(pt_marker.data[0] != pt_marker.data[0] &&
+                        pt_marker.data[1] != pt_marker.data[1] &&
+                        pt_marker.data[2] != pt_marker.data[2]){
+                    ROS_WARN("CALIBRATOR: point is NAN");
+                    return;
+                }
+                else  {/*
+                    ROS_WARN_STREAM("CALIBRATOR: The marker 3D position is: " << pt_marker.data[0]
+                                    << ", " << pt_marker.data[1] << ", " << pt_marker.data[2]);*/
+                    _global_parameters.get_markers_positions_camera_frame().row(_global_parameters.get_number_of_validated_points())
+                            << pt_marker.data[0], pt_marker.data[1], pt_marker.data[2] , 1.0;
                 }
             }
-            _global_parameters.get_markers_positions_robot_frame() << marker_robot_frame(0), marker_robot_frame(1),
-                    marker_robot_frame(2), 1.0;
+            _global_parameters.get_markers_positions_robot_frame().row(_global_parameters.get_number_of_validated_points())
+                    << marker_robot_frame(0), marker_robot_frame(1), marker_robot_frame(2), 1.0;
             int iteration_number = _global_parameters.get_number_of_validated_points()++;
             ROS_WARN_STREAM("CALIBRATOR: the supposed number is: " << iteration_number);
         }
@@ -124,10 +123,10 @@ bool CALIBRATOR::solve_for_transformation_matrix(){
     Eigen::Vector4d v1,v2,v3;
 
     ROS_WARN("CALIBRATOR: Trying to solve ....");
-    ROS_WARN_STREAM("CLAIBRATOR: number of columns: " << _global_parameters.get_markers_positions_robot_frame().cols());
-    ROS_WARN_STREAM("CLAIBRATOR: first column: " << _global_parameters.get_markers_positions_robot_frame().col(0));
-    ROS_WARN_STREAM("CLAIBRATOR: Results of comparing with zero is: " << _global_parameters.get_markers_positions_camera_frame().isApprox(test));
     if(!_global_parameters.get_markers_positions_camera_frame().isApprox(test)){
+        ROS_WARN_STREAM(_global_parameters.get_markers_positions_camera_frame());
+        ROS_WARN_STREAM(_global_parameters.get_markers_positions_robot_frame());
+
         v1 = _global_parameters.get_markers_positions_camera_frame().jacobiSvd(
                     Eigen::ComputeThinU | Eigen::ComputeThinV).solve(_global_parameters.get_markers_positions_robot_frame().col(0));
         v2 = _global_parameters.get_markers_positions_camera_frame().jacobiSvd(
@@ -140,8 +139,8 @@ bool CALIBRATOR::solve_for_transformation_matrix(){
                 v2(0), v2(1), v2(2), v2(3),
                 v3(0), v3(1), v3(2), v3(3),
                 0,     0,     0,     1;
-
-        ROS_WARN("CALIBRATOR: solved");
+        Eigen::Vector3d position;
+        position << v1(3), v2(3), v3(3);
         //get RPY and quaterion
         tf::Matrix3x3 rotation_matrix(v1(0), v1(1), v1(2),
                                       v2(0), v2(1), v2(2),
@@ -153,6 +152,7 @@ bool CALIBRATOR::solve_for_transformation_matrix(){
         rotation_matrix.getRotation(_global_parameters.get_transformation_quaternion());
         //set transformation matrix in global parameters
         _global_parameters.set_transformation_matrix(trans_matrix);
+        _global_parameters.set_transformation_position(position);
         return true;
     }
     else
@@ -160,7 +160,6 @@ bool CALIBRATOR::solve_for_transformation_matrix(){
 }
 
 void CAMERA_kinect_v2::init(){
-    ROS_INFO_STREAM("CAMERA_kinect_freenect: initializing, name space is: ");
     ROS_INFO_STREAM( _nh_camera.getNamespace());
     _syncronized_camera_sub.reset(new rgbd_utils::RGBD_Subscriber("/kinect2/qhd/camera_info",
                                                                   "/kinect2/qhd/image_color_rect",
