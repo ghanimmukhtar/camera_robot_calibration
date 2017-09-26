@@ -31,3 +31,8 @@ void calibration_helpers_methods::locate_eef_pose(geometry_msgs::Pose eef_feedba
     parameters.set_robot_eef_rpy_pose(end_effector_pose);
     //ROS_WARN_STREAM("locating eef stuff gave for position: " << eef_current_position << "\n and for orientation: " << eef_current_orientation);
 }
+
+void calibration_helpers_methods::locate_optitrack_marker_position(const geometry_msgs::PoseStamped::ConstPtr& optitrack_feedback,
+                                                                   Data_config &parameters){
+    parameters.set_optitrack_marker_msg(optitrack_feedback);
+}

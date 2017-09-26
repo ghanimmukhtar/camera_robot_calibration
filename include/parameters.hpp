@@ -46,6 +46,7 @@ struct Parameters {
     cv::Mat raw_input_picture;
     sensor_msgs::ImageConstPtr rgb_msg, depth_msg;
     sensor_msgs::CameraInfoConstPtr camera_info_msg;
+    geometry_msgs::PoseStamped::ConstPtr optitrack_marker_msg;
     std::vector<Eigen::Vector2i> marker_center;
     double x_coord = 0.0, y_coord = 0.0, z_coord = 0.0;
     Eigen::Matrix4d point_in_robot_frame, point_in_camera_frame;
@@ -104,6 +105,10 @@ public:
 
     cv::Mat& get_raw_original_picture(){
         return params.raw_input_picture;
+    }
+
+    geometry_msgs::PoseStamped::ConstPtr& get_optitrack_marker_msg(){
+        return params.optitrack_marker_msg;
     }
 
     sensor_msgs::ImageConstPtr& get_rgb_msg(){
@@ -240,6 +245,10 @@ public:
 
     void set_raw_original_picture(cv::Mat& picture){
         params.raw_input_picture = picture;
+    }
+
+    void set_optitrack_marker_msg(const geometry_msgs::PoseStamped::ConstPtr& optitrack_marker_msg){
+        params.optitrack_marker_msg = optitrack_marker_msg;
     }
 
     void set_rgb_msg(sensor_msgs::ImageConstPtr& input_rgb_msg){

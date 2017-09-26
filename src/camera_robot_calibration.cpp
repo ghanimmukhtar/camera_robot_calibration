@@ -33,6 +33,11 @@ void CALIBRATOR::init(){
         _camera->init();
     }
 
+    else if(strcmp(camera_name.c_str(), "optitrack") == 0){
+        _camera.reset(new CAMERA_optitrack);
+        _camera->init();
+    }
+
     //set number of points to calibrate
     int number_points = std::stoi(_global_parameters.get_parameters()["number_of_points"]);
     if(number_points != _global_parameters.get_number_of_points())
@@ -42,6 +47,29 @@ void CALIBRATOR::init(){
     _calibrator_spinner.reset(new ros::AsyncSpinner(1));
     _calibrator_spinner->start();
     ROS_INFO("CALIBRITOR: initialized");
+}
+
+void CALIBRATOR::acquire_optitrack_points(){
+    _global_parameters.set_camera_topics_status(false);
+    usleep(1e6);
+    Eigen::Vector3d marker_robot_frame = _global_parameters.get_robot_eef_position();
+    Eigen::Vector3d marker_optitrack_frame;
+    if(!_global_parameters.get_camera_topics_status()){
+        ROS_WARN("CALIBRITOR: Make sure that the markers are in optitrack field of view");
+        return;
+    }
+    marker_optitrack_frame << _global_parameters.get_optitrack_marker_msg()->pose.position.x,
+            _global_parameters.get_optitrack_marker_msg()->pose.position.y,
+            _global_parameters.get_optitrack_marker_msg()->pose.position.z;
+    _global_parameters.get_markers_positions_camera_frame().row(_global_parameters.get_number_of_validated_points())
+            << marker_optitrack_frame(0), marker_optitrack_frame(1), marker_optitrack_frame(2), 1;
+
+    _global_parameters.get_markers_positions_robot_frame().row(_global_parameters.get_number_of_validated_points())
+            << marker_robot_frame(0), marker_robot_frame(1), marker_robot_frame(2), 1.0;
+    int iteration_number = _global_parameters.get_number_of_validated_points()++;
+    ROS_INFO_STREAM("CALIBRATOR: marker position is: " << marker_optitrack_frame);
+    ROS_WARN_STREAM("CALIBRATOR: the supposed number is: " << iteration_number);
+
 }
 
 void CALIBRATOR::acquire_points(){
@@ -157,6 +185,14 @@ bool CALIBRATOR::solve_for_transformation_matrix(){
     }
     else
         return false;
+}
+
+void CAMERA_optitrack::init(){
+    ROS_INFO_STREAM( _nh_camera.getNamespace());
+    _camera_topics_sub = _nh_camera.subscribe<geometry_msgs::PoseStamped>("/robot/calibrator/pose", 1, &CAMERA_optitrack::save_markers_positions_cb, this);
+
+    _camera_spinner.reset(new ros::AsyncSpinner(1));
+    _camera_spinner->start();
 }
 
 void CAMERA_kinect_v2::init(){

@@ -26,6 +26,21 @@ protected:
     std::shared_ptr<rgbd_utils::RGBD_Subscriber> _syncronized_camera_sub;
 };
 
+class CAMERA_optitrack : public CAMERA{
+public:
+    typedef std::shared_ptr<CAMERA_optitrack> Ptr;
+    typedef const std::shared_ptr<CAMERA_optitrack> ConstPtr;
+
+    CAMERA_optitrack(){
+    }
+
+    void init() override;
+    void save_markers_positions_cb(const geometry_msgs::PoseStamped::ConstPtr& marker_pose){
+        _global_parameters.set_camera_topics_status(true);
+        calibration_helpers_methods::locate_optitrack_marker_position(marker_pose, _global_parameters);
+    }
+};
+
 class CAMERA_kinect_freenect : public CAMERA{
 public:
     typedef std::shared_ptr<CAMERA_kinect_freenect> Ptr;
@@ -137,6 +152,7 @@ public:
     void init();
 
     void acquire_points();
+    void acquire_optitrack_points();
     bool solve_for_transformation_matrix();
 
     Data_config& get_global_parameters(){
