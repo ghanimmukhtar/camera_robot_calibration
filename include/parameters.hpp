@@ -18,8 +18,8 @@
 #include <aruco/cameraparameters.h>
 
 #include <sensor_msgs/image_encodings.h>
-#include <rgbd_utils/rgbd_subscriber.hpp>
-#include <rgbd_utils/rgbd_to_pointcloud.h>
+#include "rgbd_utils/rgbd_subscriber.hpp"
+#include "rgbd_utils/rgbd_to_pointcloud.h"
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <baxter_core_msgs/EndpointState.h>
