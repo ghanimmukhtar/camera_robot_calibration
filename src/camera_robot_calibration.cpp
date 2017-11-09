@@ -6,6 +6,8 @@ void CALIBRATOR::init(){
     ROS_INFO("CALIBRITOR: initializing ......");
     _nh_clibrator.getParam("/calibration_parameters", _global_parameters.get_parameters());
     _global_parameters.set_marker_size(std::stof(_global_parameters.get_parameters()["marker_size"]));
+    _global_parameters.set_epsilon(std::stof(_global_parameters.get_parameters()["epsilon"]));
+    _global_parameters.set_first_iteration(true);
 
     //set the robot
     std::string robot_name = std::string(_global_parameters.get_parameters()["robot"]);
@@ -49,6 +51,7 @@ void CALIBRATOR::init(){
     ROS_INFO("CALIBRITOR: initialized");
 }
 
+
 void CALIBRATOR::acquire_optitrack_points(){
     _global_parameters.set_camera_topics_status(false);
     usleep(1e6);
@@ -72,6 +75,20 @@ void CALIBRATOR::acquire_optitrack_points(){
 
 }
 
+void CALIBRATOR::show_image(){
+    try{
+        cv::namedWindow("ShowMarker",CV_WINDOW_AUTOSIZE);
+        cv::imshow("ShowMarker", _global_parameters.get_raw_original_picture());
+        cv::waitKey(1);
+    }
+    catch(...)
+    {
+        ROS_ERROR("Something went wrong !!!");
+        return;
+    }
+
+}
+
 void CALIBRATOR::acquire_points(){
     ROS_INFO("CALIBRATOR: at acquiring points");
     //while(!_global_parameters.get_camera_topics_status());
@@ -79,14 +96,19 @@ void CALIBRATOR::acquire_points(){
     _global_parameters.get_depth_msg().reset(new sensor_msgs::Image(_camera->_syncronized_camera_sub->get_depth()));
     _global_parameters.get_camera_info_msg().reset(new sensor_msgs::CameraInfo(_camera->_syncronized_camera_sub->get_rgb_info()));
     Eigen::Vector3d marker_robot_frame = _global_parameters.get_robot_eef_position();
-
-    cv::namedWindow("ShowMarker",CV_WINDOW_AUTOSIZE);
+    std::vector<double> current_eef_position = {marker_robot_frame(0), marker_robot_frame(1), marker_robot_frame(2)};
+    if(_global_parameters.get_first_iteration()){
+        _global_parameters.set_last_eef_position(current_eef_position);
+        _global_parameters.set_first_iteration(false);
+    }
 
     cv_bridge::CvImagePtr cv_ptr = _global_parameters.get_cvt();
     try
     {
         cv_ptr = cv_bridge::toCvCopy(_global_parameters.get_rgb_msg(), sensor_msgs::image_encodings::BGR8);
         _global_parameters.set_raw_original_picture(cv_ptr->image);
+
+
         _global_parameters.get_aruco_marker_detector().setDictionary("ARUCO");
         _global_parameters.get_aruco_marker_detector().detect(_global_parameters.get_raw_original_picture(),
                                                               _global_parameters.get_markers(),
@@ -107,7 +129,7 @@ void CALIBRATOR::acquire_points(){
                        _global_parameters.set_rgb_cloud_converter(_global_parameters.get_depth_msg(),
                                                                   _global_parameters.get_rgb_msg(),
                                                                   _global_parameters.get_camera_info_msg());
-            _global_parameters.set_pointcloud_msg(_global_parameters.get_rgb_cloud_converter().get_pointcloud());
+                    _global_parameters.set_pointcloud_msg(_global_parameters.get_rgb_cloud_converter().get_pointcloud());
 
             pcl::PointCloud<pcl::PointXYZRGBA>::Ptr
                     input_cloud(new pcl::PointCloud<pcl::PointXYZRGBA>);
@@ -121,21 +143,27 @@ void CALIBRATOR::acquire_points(){
                     ROS_WARN("CALIBRATOR: point is NAN");
                     return;
                 }
-                else  {/*
-                    ROS_WARN_STREAM("CALIBRATOR: The marker 3D position is: " << pt_marker.data[0]
-                                    << ", " << pt_marker.data[1] << ", " << pt_marker.data[2]);*/
-                    _global_parameters.get_markers_positions_camera_frame().row(_global_parameters.get_number_of_validated_points())
-                            << pt_marker.data[0], pt_marker.data[1], pt_marker.data[2] , 1.0;
+                else{
+                    int iteration_number = -1;
+                    double difference = calibration_helpers_methods::largest_difference(current_eef_position, _global_parameters.get_last_eef_position());
+                    ROS_WARN_STREAM("CALIBRATOR: the difference is: " << difference);
+                    if(difference > _global_parameters.get_epsilon()){
+                        //save points only if end effector position changes with an epsilon
+                        _global_parameters.get_markers_positions_camera_frame().row(_global_parameters.get_number_of_validated_points())
+                                << pt_marker.data[0], pt_marker.data[1], pt_marker.data[2] , 1.0;
+
+                        _global_parameters.get_markers_positions_robot_frame().row(_global_parameters.get_number_of_validated_points())
+                                << marker_robot_frame(0), marker_robot_frame(1), marker_robot_frame(2), 1.0;
+                        iteration_number = _global_parameters.get_number_of_validated_points()++;
+                        ROS_WARN_STREAM("CALIBRATOR: the supposed number is: " << iteration_number);
+                    }
+                    else
+                        ROS_WARN_STREAM("CALIBRATOR: Failed iteration: " << iteration_number);
                 }
+                _global_parameters.set_last_eef_position(current_eef_position);
             }
-            _global_parameters.get_markers_positions_robot_frame().row(_global_parameters.get_number_of_validated_points())
-                    << marker_robot_frame(0), marker_robot_frame(1), marker_robot_frame(2), 1.0;
-            int iteration_number = _global_parameters.get_number_of_validated_points()++;
-            ROS_WARN_STREAM("CALIBRATOR: the supposed number is: " << iteration_number);
         }
-//        ROS_WARN_STREAM("CALIBRATOR: the supposed number is: " << _global_parameters.get_number_of_validated_points()++);
-        cv::imshow("ShowMarker", _global_parameters.get_raw_original_picture());
-        cv::waitKey(1);
+        //        ROS_WARN_STREAM("CALIBRATOR: the supposed number is: " << _global_parameters.get_number_of_validated_points()++);
     }
     catch(...)
     {

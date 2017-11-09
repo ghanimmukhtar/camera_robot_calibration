@@ -11,16 +11,21 @@ find_package(catkin REQUIRED COMPONENTS
         std_msgs
         pcl_conversions
         cv_bridge
-  	tf
-  	crustcrawler_core_msgs
-  	baxter_core_msgs
+  	    tf
+        rgbd_utils
+  	    crustcrawler_core_msgs
+  	    baxter_core_msgs
         message_filters
 )
 
 find_package(Boost REQUIRED COMPONENTS system )
 find_package(OpenCV REQUIRED COMPONENTS features2d nonfree)
 find_package(PCL 1.7 REQUIRED)
-find_package(Eigen3 REQUIRED)
+find_package(PkgConfig)
+pkg_search_module(Eigen3 REQUIRED eigen3)
+
+find_path(RGBD_UTILS_INCLUDE_DIR rgbd_utils/rgbd_subscriber.hpp)
+find_library(RGBD_UTILS_LIBRARY NAMES rgbd_utils)
 
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
@@ -32,7 +37,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -fPIC")
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES camera_robot_calibration
-  CATKIN_DEPENDS geometry_msgs image_geometry image_transport roscpp rospy sensor_msgs std_msgs pcl_conversions cv_bridge tf crustcrawler_core_msgs baxter_core_msgs
+  CATKIN_DEPENDS geometry_msgs image_geometry image_transport roscpp rospy sensor_msgs std_msgs pcl_conversions cv_bridge rgbd_utils tf crustcrawler_core_msgs baxter_core_msgs
 )
 
 ## Specify additional locations of header files
@@ -40,7 +45,8 @@ catkin_package(
 ## include_directories(include /usr/local/include ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${PCL_INCLUDE_DIR})
 include_directories(include /opt/ros/indigo/include/)
 include_directories(
-        ${catkin_INCLUDE_DIR}
+        ${catkin_INCLUDE_DIR} 
+        ${RGBD_UTILS_INCLUDE_DIR}
 )
 
 ## Declare a C++ library

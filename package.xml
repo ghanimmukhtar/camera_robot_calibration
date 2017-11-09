@@ -18,6 +18,7 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>pcl_conversions</build_depend>
   <build_depend>cv_bridge</build_depend>
+  <build_depend>rgbd_utils</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>crustcrawler_core_msgs</build_depend>
   <build_depend>baxter_core_msgs</build_depend>
@@ -31,6 +32,7 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>pcl_conversions</run_depend>
   <run_depend>cv_bridge</run_depend>
+  <run_depend>rgbd_utils</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>crustcrawler_core_msgs</run_depend>
   <run_depend>baxter_core_msgs</run_depend>

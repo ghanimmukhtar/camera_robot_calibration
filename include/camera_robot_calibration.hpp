@@ -1,7 +1,6 @@
 #ifndef _BAXTER_MOVER_HPP
 #define _BAXTER_MOVER_HPP
 
-#include "parameters.hpp"
 #include "helpers_methods.hpp"
 
 namespace camera_robot_calibration {
@@ -151,9 +150,11 @@ public:
 
     void init();
 
+    void show_image();
     void acquire_points();
     void acquire_optitrack_points();
     bool solve_for_transformation_matrix();
+
 
     Data_config& get_global_parameters(){
         return _global_parameters;

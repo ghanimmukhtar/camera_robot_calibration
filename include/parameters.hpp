@@ -48,7 +48,8 @@ struct Parameters {
     sensor_msgs::CameraInfoConstPtr camera_info_msg;
     geometry_msgs::PoseStamped::ConstPtr optitrack_marker_msg;
     std::vector<Eigen::Vector2i> marker_center;
-    double x_coord = 0.0, y_coord = 0.0, z_coord = 0.0;
+    std::vector<double> last_eef_position;
+    double x_coord = 0.0, y_coord = 0.0, z_coord = 0.0, epsilon = 100;
     Eigen::Matrix4d point_in_robot_frame, point_in_camera_frame;
     aruco::MarkerDetector marker_detector;
     aruco::CameraParameters camera_character;
@@ -64,7 +65,7 @@ struct Parameters {
     Eigen::Vector3d transformation_RPY, transformation_position;
     tf::Quaternion transformation_quaternion;
 
-    bool camera_topics_good = false;
+    bool camera_topics_good = false, first_iteration = true;
 
 };
 class Data_config{
@@ -127,6 +128,10 @@ public:
         return params.marker_center;
     }
 
+    std::vector<double>& get_last_eef_position(){
+        return params.last_eef_position;
+    }
+
     double get_x_coordinate(){
         return params.x_coord;
     }
@@ -137,6 +142,10 @@ public:
 
     double get_z_coordinate(){
         return params.z_coord;
+    }
+
+    double get_epsilon(){
+        return params.epsilon;
     }
 
     Eigen::Vector3d get_marker_position(){
@@ -211,6 +220,10 @@ public:
         return params.camera_topics_good;
     }
 
+    bool get_first_iteration(){
+        return params.first_iteration;
+    }
+
     int& get_number_of_validated_points(){
         return params.number_of_valid_point;
     }
@@ -267,6 +280,10 @@ public:
         params.marker_center = vector_marker_center;
     }
 
+    void set_last_eef_position(std::vector<double>& eef_position){
+        params.last_eef_position = eef_position;
+    }
+
     void set_x_coordinate(double x){
         params.x_coord = x;
     }
@@ -277,6 +294,10 @@ public:
 
     void set_z_coordinate(double z){
         params.z_coord = z;
+    }
+
+    void set_epsilon(double epsilon){
+        params.epsilon = epsilon;
     }
 
     void set_point_in_robot_frame(Eigen::Matrix4d& point){
@@ -335,6 +356,10 @@ public:
 
     void set_camera_topics_status(bool status){
         params.camera_topics_good = status;
+    }
+
+    void set_first_iteration(bool first){
+        params.first_iteration = first;
     }
 
     void set_number_of_validated_point(int i){

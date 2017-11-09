@@ -13,4 +13,10 @@ void locate_eef_pose(geometry_msgs::Pose eef_feedback, Data_config& parameters);
  * */
 void locate_optitrack_marker_position(const geometry_msgs::PoseStamped::ConstPtr& optitrack_feedback, Data_config& parameters);
 
+/* Gives the largest difference between two vetctors elements
+ * input: the to compare
+ * return: a double that represents the biggest difference found between the two vectors elements
+ * */
+double largest_difference(std::vector<double> &first, std::vector<double> &second);
+
 }

@@ -36,3 +36,16 @@ void calibration_helpers_methods::locate_optitrack_marker_position(const geometr
                                                                    Data_config &parameters){
     parameters.set_optitrack_marker_msg(optitrack_feedback);
 }
+
+//get largest difference between elements of two vectors
+double calibration_helpers_methods::largest_difference(std::vector<double> &first, std::vector<double> &second){
+        Eigen::VectorXd difference(first.size());
+        double my_max = 0;
+        for(size_t j = 0; j < first.size(); ++j)
+            difference(j) = fabs(first[j] - second[j]);
+        for(size_t j = 0; j < first.size(); ++j){
+                if(difference(j) > my_max)
+                    my_max = difference(j);
+            }
+        return my_max;
+    }
