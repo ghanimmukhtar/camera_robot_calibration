@@ -19,4 +19,9 @@ void locate_optitrack_marker_position(const geometry_msgs::PoseStamped::ConstPtr
  * */
 double largest_difference(std::vector<double> &first, std::vector<double> &second);
 
+/*Deduce crustcrawler end effector pose from TF transform and save it accordingly in the global param variable
+ * input: the name of the gripper
+ * return: nothing but set the corresponding variable in the Data_config class
+ * */
+void get_crustcrawler_eef_pose_from_tf(Data_config& parameters);
 }

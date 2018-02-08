@@ -32,6 +32,57 @@ void calibration_helpers_methods::locate_eef_pose(geometry_msgs::Pose eef_feedba
     //ROS_WARN_STREAM("locating eef stuff gave for position: " << eef_current_position << "\n and for orientation: " << eef_current_orientation);
 }
 
+void calibration_helpers_methods::get_crustcrawler_eef_pose_from_tf(Data_config& parameters){
+    tf::StampedTransform transform;
+    tf::TransformListener listener;
+    geometry_msgs::Pose eef_pose;
+    bool transformed = false;
+    while(ros::ok() && !transformed){
+        try {
+            listener.lookupTransform("base", "the_gripper", ros::Time(0), transform);
+            eef_pose.position.x = transform.getOrigin().getX();
+            eef_pose.position.y = transform.getOrigin().getY();
+            eef_pose.position.z = transform.getOrigin().getZ();
+            eef_pose.orientation.w = transform.getRotation().getW();
+            eef_pose.orientation.x = transform.getRotation().getX();
+            eef_pose.orientation.y = transform.getRotation().getY();
+            eef_pose.orientation.z = transform.getRotation().getZ();
+
+            Eigen::VectorXd end_effector_pose(6);
+            tf::Quaternion eef_rpy_orientation;
+
+            tf::quaternionMsgToTF(eef_pose.orientation, eef_rpy_orientation);
+
+            double roll, yaw, pitch;
+            tf::Matrix3x3 m(eef_rpy_orientation);
+            m.getRPY(roll, pitch, yaw);
+            Eigen::Vector3d eef_current_position;
+            Eigen::Vector3d eef_current_orientation;
+            eef_current_position << eef_pose.position.x,
+                    eef_pose.position.y,
+                    eef_pose.position.z;
+
+            eef_current_orientation <<    roll,
+                    pitch,
+                    yaw;
+            end_effector_pose << eef_pose.position.x,
+                    eef_pose.position.y,
+                    eef_pose.position.z,
+                    roll,
+                    pitch,
+                    yaw;
+            parameters.set_robot_eef_position(eef_current_position);
+            parameters.set_robot_eef_rpy_orientation(eef_current_orientation);
+            parameters.set_robot_eef_pose(eef_pose);
+            parameters.set_robot_eef_rpy_pose(end_effector_pose);
+            transformed = true;
+        }
+        catch (tf::TransformException &ex) {
+            ROS_ERROR("%s",ex.what());
+        }
+    }
+}
+
 void calibration_helpers_methods::locate_optitrack_marker_position(const geometry_msgs::PoseStamped::ConstPtr& optitrack_feedback,
                                                                    Data_config &parameters){
     parameters.set_optitrack_marker_msg(optitrack_feedback);
@@ -39,13 +90,13 @@ void calibration_helpers_methods::locate_optitrack_marker_position(const geometr
 
 //get largest difference between elements of two vectors
 double calibration_helpers_methods::largest_difference(std::vector<double> &first, std::vector<double> &second){
-        Eigen::VectorXd difference(first.size());
-        double my_max = 0;
-        for(size_t j = 0; j < first.size(); ++j)
-            difference(j) = fabs(first[j] - second[j]);
-        for(size_t j = 0; j < first.size(); ++j){
-                if(difference(j) > my_max)
-                    my_max = difference(j);
-            }
-        return my_max;
+    Eigen::VectorXd difference(first.size());
+    double my_max = 0;
+    for(size_t j = 0; j < first.size(); ++j)
+        difference(j) = fabs(first[j] - second[j]);
+    for(size_t j = 0; j < first.size(); ++j){
+        if(difference(j) > my_max)
+            my_max = difference(j);
     }
+    return my_max;
+}

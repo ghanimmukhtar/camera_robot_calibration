@@ -95,6 +95,10 @@ void CALIBRATOR::acquire_points(){
     _global_parameters.get_rgb_msg().reset(new sensor_msgs::Image(_camera->_syncronized_camera_sub->get_rgb()));
     _global_parameters.get_depth_msg().reset(new sensor_msgs::Image(_camera->_syncronized_camera_sub->get_depth()));
     _global_parameters.get_camera_info_msg().reset(new sensor_msgs::CameraInfo(_camera->_syncronized_camera_sub->get_rgb_info()));
+
+    //std::string robot_name = std::string(_global_parameters.get_parameters()["robot"]);
+    //if(robot_name == "crustcrawler")
+      //  calibration_helpers_methods::get_crustcrawler_eef_pose_from_tf(_global_parameters);
     Eigen::Vector3d marker_robot_frame = _global_parameters.get_robot_eef_position();
     std::vector<double> current_eef_position = {marker_robot_frame(0), marker_robot_frame(1), marker_robot_frame(2)};
     if(_global_parameters.get_first_iteration()){
