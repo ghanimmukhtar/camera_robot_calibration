@@ -33,7 +33,7 @@
 
 #include <yaml-cpp/yaml.h>
 
-struct Parameters {
+struct Calibration_Parameters {
     XmlRpc::XmlRpcValue parameters;
     geometry_msgs::Pose robot_eef_pose;
     Eigen::VectorXd robot_eef_rpy_pose;
@@ -68,10 +68,10 @@ struct Parameters {
     bool camera_topics_good = false, first_iteration = true;
 
 };
-class Data_config{
+class Calibration_Data_config{
 public:
-    Parameters params;
-    Data_config(){
+    Calibration_Parameters params;
+    Calibration_Data_config(){
         //params.point_in_camera_frame.resize(params.number_of_points, 4);
         //params.point_in_robot_frame.resize(params.number_of_points, 4);
     }

@@ -1,6 +1,6 @@
-#include "helpers_methods.hpp"
+#include "calibration_helpers_methods.hpp"
 
-void calibration_helpers_methods::locate_eef_pose(geometry_msgs::Pose eef_feedback, Data_config &parameters){
+void calibration_helpers_methods::locate_eef_pose(geometry_msgs::Pose eef_feedback, Calibration_Data_config &parameters){
     Eigen::VectorXd end_effector_pose(6);
     geometry_msgs::Pose eef_pose_quat = eef_feedback;
     tf::Quaternion eef_rpy_orientation;
@@ -32,7 +32,7 @@ void calibration_helpers_methods::locate_eef_pose(geometry_msgs::Pose eef_feedba
     //ROS_WARN_STREAM("locating eef stuff gave for position: " << eef_current_position << "\n and for orientation: " << eef_current_orientation);
 }
 
-void calibration_helpers_methods::get_crustcrawler_eef_pose_from_tf(Data_config& parameters){
+void calibration_helpers_methods::get_crustcrawler_eef_pose_from_tf(Calibration_Data_config& parameters){
     tf::StampedTransform transform;
     tf::TransformListener listener;
     geometry_msgs::Pose eef_pose;
@@ -84,7 +84,7 @@ void calibration_helpers_methods::get_crustcrawler_eef_pose_from_tf(Data_config&
 }
 
 void calibration_helpers_methods::locate_optitrack_marker_position(const geometry_msgs::PoseStamped::ConstPtr& optitrack_feedback,
-                                                                   Data_config &parameters){
+                                                                   Calibration_Data_config &parameters){
     parameters.set_optitrack_marker_msg(optitrack_feedback);
 }
 

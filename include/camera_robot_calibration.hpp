@@ -1,10 +1,10 @@
 #ifndef _BAXTER_MOVER_HPP
 #define _BAXTER_MOVER_HPP
 
-#include "helpers_methods.hpp"
+#include "calibration_helpers_methods.hpp"
 
 namespace camera_robot_calibration {
-Data_config _global_parameters;
+Calibration_Data_config _global_parameters;
 class ROBOT;
 class CAMERA;
 class CALIBRATOR;
@@ -156,7 +156,7 @@ public:
     bool solve_for_transformation_matrix();
 
 
-    Data_config& get_global_parameters(){
+    Calibration_Data_config& get_global_parameters(){
         return _global_parameters;
     }
 private:
