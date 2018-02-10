@@ -152,12 +152,14 @@ void CALIBRATOR::acquire_points(){
                     double difference = calibration_helpers_methods::largest_difference(current_eef_position, _global_parameters.get_last_eef_position());
                     ROS_WARN_STREAM("CALIBRATOR: the difference is: " << difference);
                     if(difference > _global_parameters.get_epsilon()){
+                        marker_robot_frame = _global_parameters.get_robot_eef_position();
                         //save points only if end effector position changes with an epsilon
                         _global_parameters.get_markers_positions_camera_frame().row(_global_parameters.get_number_of_validated_points())
                                 << pt_marker.data[0], pt_marker.data[1], pt_marker.data[2] , 1.0;
 
                         _global_parameters.get_markers_positions_robot_frame().row(_global_parameters.get_number_of_validated_points())
                                 << marker_robot_frame(0), marker_robot_frame(1), marker_robot_frame(2), 1.0;
+                        ROS_INFO_STREAM("CALIBRATOR: Robot EEF Position is : " << marker_robot_frame);
                         iteration_number = _global_parameters.get_number_of_validated_points()++;
                         ROS_WARN_STREAM("CALIBRATOR: the supposed number is: " << iteration_number);
                     }
