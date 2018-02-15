@@ -35,14 +35,14 @@
 
   In a terminal enter the following :
   ```
-  :~$ sudo apt-get update
-  :~$ sudo apt-get install libboost-all-dev libopencv-dev libtbb-dev libeigen3-dev libb64-dev libflann-dev ros-indigo-moveit
+  sudo apt-get update
+  sudo apt-get install libboost-all-dev libopencv-dev libtbb-dev libeigen3-dev libb64-dev libflann-dev ros-indigo-moveit
   ```
 - *pcl 1.7.2 :*
 
   Get the repository:
   ```
-  :~$ wget https://github.com/PointCloudLibrary/pcl/archive/pcl-1.7.2.tar.gz
+  wget https://github.com/PointCloudLibrary/pcl/archive/pcl-1.7.2.tar.gz
   ```
   
   Then add the following around line 22 of the CMakeLists.txt :
@@ -60,39 +60,39 @@
   ```
   Then :
   ```
-  :~$ cd pcl-pcl-1.7.2
-  :~/pcl-pcl-1.7.2$ mkdir build && cd build
-  :~/pcl-pcl-1.7.2/build$ cmake -DCMAKE_INSTALL_PREFIX=/usr/local ..       (this will overwrite the current PCL installation)
-  :~/pcl-pcl-1.7.2/build$ make -j8                                   (or -jn if you have n cores processors)
-  :~/pcl-pcl-1.7.2/build$ sudo make install
+  cd pcl-pcl-1.7.2
+  mkdir build && cd build
+  cmake -DCMAKE_INSTALL_PREFIX=/usr/local ..       (this will overwrite the current PCL installation)
+  make -j8                                   (or -jn if you have n cores processors)
+  sudo make install
   ```
 - *opencv_nonfree :*
   In a terminal :
   ```
-  :~$ sudo add-apt-repository --yes ppa:xqms/opencv-nonfree
-  :~$ sudo apt-get update
-  :~$ sudo apt-get install libopencv-nonfree-dev
+  sudo add-apt-repository --yes ppa:xqms/opencv-nonfree
+  sudo apt-get update
+  sudo apt-get install libopencv-nonfree-dev
   ```
   
 - *[aruco](https://github.com/robotsthatdream/aruco.git) :*
 
   Open a terminal and enter the following commands :
   ```
-  :~$ git clone https://github.com/robotsthatdream/aruco.git
-  :~$ cd aruco/
-  :~/aruco$ mkdir build && cd build
-  :~/aruco/build$ cmake ..
-  :~/aruco/build$ make -j8               
-  :~/aruco/build$ sudo make install      
+  git clone https://github.com/robotsthatdream/aruco.git
+  cd aruco/
+  mkdir build && cd build
+  cmake ..
+  make -j8               
+  sudo make install      
   ```
 
 - *camera_sdks :*
   
   If we are using *kinect v1* we should make sure to install *freenect* and/or *openni2* :
   ```
-  :~$ source /opt/ros/indigo/setup.bash
-  :~$ sudo apt-get install ros-indigo-freenect-*
-  :~$ sudo apt-get install ros-indigo-openni2-*
+  source /opt/ros/indigo/setup.bash
+  sudo apt-get install ros-indigo-freenect-*
+  sudo apt-get install ros-indigo-openni2-*
   ```
   
   If we are to use *kinect v2* follow [these](https://github.com/code-iai/iai_kinect2) instructions.
@@ -103,44 +103,44 @@
 
   We assume your catkin workspace is in your home directory. In a terminal:
   ```
-  :~$ cd ~/catkin_ws/src
-  :~/catkin_ws/src$ git clone https://github.com/robotsthatdream/crustcrawler.git
-  :~/catkin_ws/src$ cd ..
-  :~/catkin_ws$ source devel/setup.bash
-  :~/catkin_ws$ catkin_make install
+  cd ~/catkin_ws/src
+  git clone https://github.com/robotsthatdream/crustcrawler.git
+  cd ..
+  source devel/setup.bash
+  catkin_make install
   ```
   
 - *image_processing :*
 
   In the terminal do the following :
   ```
-  :~$ git clone git@github.com:robotsthatdream/image_processing.git
-  :~$ cd image_processing
-  :~/image_processing$ mkdir build && cd build
-  :~/image_processing/build$ cmake .. && make -j && sudo make install
+  git clone git@github.com:robotsthatdream/image_processing.git
+  cd image_processing
+  mkdir build && cd build
+  cmake .. && make -j && sudo make install
   ```
 
 - *rgbd_utils :*
   
    Follow the following instructions in a terminal :
   ```
-  :~$ git clone git clone https://project.isir.upmc.fr//git/babbling_arm_exp/                (You will need access from Dr.   Stéphane Doncioux)
-  :~$ cd ~/catkin_ws/src
-  :~/catkin_ws/src$ ln -s ~/babbling_arm_exp/rgbd_utils                                      (equivalent to copying the repository into src folder of catkin workspace)
-  :~/catkin_ws/src$ cd ..
-  :~/catkin_ws$ source devel/setup.bash
-  :~/catkin_ws$ catkin_make -DCATKIN_WHITELIST_PACKAGES=rgbd_utils install
+  git clone git clone https://project.isir.upmc.fr//git/babbling_arm_exp/                (You will need access from Dr.   Stéphane Doncioux)
+  cd ~/catkin_ws/src
+  ln -s ~/babbling_arm_exp/rgbd_utils                                      (equivalent to copying the repository into src folder of catkin workspace)
+  cd ..
+  source devel/setup.bash
+  catkin_make -DCATKIN_WHITELIST_PACKAGES=rgbd_utils install
   ```
   
 - *[camera_robot_calibration](https://github.com/robotsthatdream/camera_robot_calibration.git) :*
   
     In a terminal :
     ```
-    :~$ cd ~/catkin_ws/src 
-    :~/catkin_ws/src$ git clone https://github.com/robotsthatdream/camera_robot_calibration.git
-    :~/catkin_ws/src$ cd ..
-    :~/catkin_ws$ source devel/setup.bash
-    :~/catkin_ws$ catkin_make -DCATKIN_WHITELIST_PACKAGES=rgbd_utils install
+    cd ~/catkin_ws/src 
+    git clone https://github.com/robotsthatdream/camera_robot_calibration.git
+    cd ..
+    source devel/setup.bash
+    catkin_make -DCATKIN_WHITELIST_PACKAGES=rgbd_utils install
     ```
     
 # Usage
