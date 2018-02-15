@@ -34,10 +34,10 @@
 - *Boost, OpenCV, tbb, Eigen3, b64, flann and ros indigo moveit :*
 
   In a terminal enter the following :
-```
-:~$ sudo apt-get update
-:~$ sudo apt-get install libboost-all-dev libopencv-dev libtbb-dev libeigen3-dev libb64-dev libflann-dev ros-indigo-moveit
-```
+  ```
+  :~$ sudo apt-get update
+  :~$ sudo apt-get install libboost-all-dev libopencv-dev libtbb-dev libeigen3-dev libb64-dev libflann-dev ros-indigo-moveit
+  ```
 - *pcl 1.7.2 :*
 
   Get the repository:
@@ -74,7 +74,7 @@
   :~$ sudo apt-get install libopencv-nonfree-dev
   ```
   
-- *aruco :*
+- *[aruco](https://github.com/robotsthatdream/aruco.git) :*
 
   Open a terminal and enter the following commands :
   ```
