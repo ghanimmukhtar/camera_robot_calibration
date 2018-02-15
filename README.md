@@ -4,7 +4,7 @@
 
   Using ARUCO markers to find transformation matrix between kinect v1 or v2 cameras and the robot (BAXTER, or crustcrawler) thanks to forming and solving overdetermined  linear equation system. 
   
-  One can't use this library directly to do the calibration, one needs to instatiate an instant of the "calibrator" defined in the library. This is done in the repository "[test_camera_robot_calibration](https://github.com/ghanimmukhtar/test_camera_robot_calibration)" so after installing this library into one's catkin_ws, one needs to install the other repository and use that one to do the calibration.
+  One can't use this library directly to do the calibration, one needs to instatiate an instant of the "calibrator" defined in the library. This is done in the repository [test_camera_robot_calibration](https://github.com/robotsthatdream/test_camera_robot_calibration.git) so after installing this library into one's catkin_ws, one needs to install the other repository and use that one to do the calibration.
 
 # Dependencies
 
@@ -13,13 +13,13 @@
 - pcl 1.7.2 compiled with c++11.
 - opencv_nonfree.
 - camera_sdks.
-- [aruco](https://github.com/ghanimmukhtar/aruco) : 
+- [aruco](https://github.com/robotsthatdream/aruco.git) : 
 
   This is a library I used to be able to recognize the QR codes that will be utilised later to achieve the calibration. So it isn't vital for the mehtod in general, if you another library you can install it but again you need to change the detection method inside the code.
 - [baxter_sdks](http://sdk.rethinkrobotics.com/wiki/Workstation_Setup) : 
 
   One of the robots that this library is used with is the BAXTER robot so one needs to setup all BAXTER sdks in the catkin workspace to be able to get necessary information (mainly End Effector position) for the calibration to work.
-- [crustcrawler_sdks](https://github.com/ghanimmukhtar/crustcrawler) : 
+- [crustcrawler_sdks](https://github.com/robotsthatdream/crustcrawler_dream.git) : 
   
   It is in-house developed sdks to deal with our customly built crustcrawler robot, and to integrate it with ROS. Again one needs to clone the whole thing within the catkin workspace and catkin_make install it.
 - [image_processing](https://github.com/robotsthatdream/image_processing) : 
