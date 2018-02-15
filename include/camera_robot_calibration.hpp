@@ -154,6 +154,9 @@ public:
     void acquire_points();
     void acquire_optitrack_points();
     bool solve_for_transformation_matrix();
+    void tf_base_conversion(Eigen::Vector3d& converted_point,
+                            Eigen::Vector3d& to_be_converted_point,
+                            const std::string& child, const std::string& parent);
 
 
     Calibration_Data_config& get_global_parameters(){

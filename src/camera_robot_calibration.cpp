@@ -51,6 +51,50 @@ void CALIBRATOR::init(){
     ROS_INFO("CALIBRITOR: initialized");
 }
 
+//Convert point position from kinect2_rgb_optical frame to kinect2_ir_optical frame
+void CALIBRATOR::tf_base_conversion(Eigen::Vector3d& converted_point, Eigen::Vector3d& to_be_converted_point,
+                        const std::string& child, const std::string& parent){
+    tf::TransformListener listener;
+    tf::StampedTransform stamped_transform;
+    std::string child_frame = child;
+    std::string parent_frame = parent;
+    ROS_WARN_STREAM("Child frame inside conversion function is : " << child_frame << " and parent frame is : " << parent_frame);
+    try{
+        listener.lookupTransform(child_frame, parent_frame,
+                                 ros::Time::now(), stamped_transform);
+    }
+    catch (tf::TransformException &ex) {
+        ROS_ERROR("%s",ex.what());
+        ros::Duration(1.0).sleep();
+    }
+
+    geometry_msgs::PointStamped input_point;
+    geometry_msgs::PointStamped output_point;
+    input_point.header.frame_id = child_frame;
+
+    //we'll just use the most recent transform available for our simple example
+    input_point.header.stamp = ros::Time();
+
+    //just an arbitrary point in space
+    input_point.point.x = to_be_converted_point(0);
+    input_point.point.y = to_be_converted_point(1);
+    input_point.point.z = to_be_converted_point(2);
+
+    try{
+
+        listener.transformPoint(parent_frame, input_point, output_point);
+
+        ROS_INFO("kinect2_rgb_optical_frame: (%.2f, %.2f. %.2f) -----> kinect2_ir_optical_link: (%.2f, %.2f, %.2f) at time %.2f",
+                 input_point.point.x, input_point.point.y, input_point.point.z,
+                 output_point.point.x, output_point.point.y, output_point.point.z, output_point.header.stamp.toSec());
+    }
+    catch(tf::TransformException& ex){
+        ROS_ERROR("Received an exception trying to transform a point from \"base_laser\" to \"base_link\": %s", ex.what());
+    }
+    converted_point << output_point.point.x,
+            output_point.point.y,
+            output_point.point.z;
+}
 
 void CALIBRATOR::acquire_optitrack_points(){
     _global_parameters.set_camera_topics_status(false);
@@ -119,6 +163,7 @@ void CALIBRATOR::acquire_points(){
                                                               _global_parameters.get_camera_character(),
                                                               0.1);
         _global_parameters.get_marker_centers().resize(_global_parameters.get_markers().size());
+        ROS_WARN_STREAM("CALIBRATOR: Number of detected markers is : " << _global_parameters.get_markers().size());
         for(size_t i = 0; i < _global_parameters.get_markers().size(); i++){
             _global_parameters.get_markers()[i].draw(_global_parameters.get_raw_original_picture(), cv::Scalar(94.0, 206.0, 165.0, 0.0));
             _global_parameters.get_markers()[i].calculateExtrinsics(_global_parameters.get_marker_size(),
@@ -154,8 +199,22 @@ void CALIBRATOR::acquire_points(){
                     if(difference > _global_parameters.get_epsilon()){
                         marker_robot_frame = _global_parameters.get_robot_eef_position();
                         //save points only if end effector position changes with an epsilon
+                        //convert from rgb_optical_frame to ir_optical_frame
+                        //Eigen::Vector3d position_in_rgb_optical_frame, position_in_ir_optical_frame;
+                        //position_in_rgb_optical_frame << pt_marker.data[0], pt_marker.data[1], pt_marker.data[2];
+                        //tf_base_conversion(position_in_ir_optical_frame,
+                          //                 position_in_rgb_optical_frame,
+                            //               "kinect2_rgb_optical_frame",
+                              //             "kinect2_ir_optical_frame");
+
+                        //_global_parameters.get_markers_positions_camera_frame().row(_global_parameters.get_number_of_validated_points())
+                          //      << position_in_ir_optical_frame(0),
+                            //    position_in_ir_optical_frame(1),
+                              //  position_in_ir_optical_frame(2),
+                                //1.0;
+
                         _global_parameters.get_markers_positions_camera_frame().row(_global_parameters.get_number_of_validated_points())
-                                << pt_marker.data[0], pt_marker.data[1], pt_marker.data[2] , 1.0;
+                                << pt_marker.data[0], pt_marker.data[1], pt_marker.data[2], 1.0;
 
                         _global_parameters.get_markers_positions_robot_frame().row(_global_parameters.get_number_of_validated_points())
                                 << marker_robot_frame(0), marker_robot_frame(1), marker_robot_frame(2), 1.0;
