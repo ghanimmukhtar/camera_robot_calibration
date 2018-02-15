@@ -78,7 +78,7 @@
 
   Open a terminal and enter the following commands :
   ```
-  :~$ git clone https://github.com/ghanimmukhtar/aruco.git
+  :~$ git clone https://github.com/robotsthatdream/aruco.git
   :~$ cd aruco/
   :~/aruco$ mkdir build && cd build
   :~/aruco/build$ cmake ..
@@ -99,12 +99,12 @@
   
 - *[baxter_sdks](http://sdk.rethinkrobotics.com/wiki/Workstation_Setup).*
 
-- *[crustcrawler_sdks](https://github.com/ghanimmukhtar/crustcrawler) :*
+- *[crustcrawler_sdks](https://github.com/robotsthatdream/crustcrawler_dream.git) :*
 
   We assume your catkin workspace is in your home directory. In a terminal:
   ```
   :~$ cd ~/catkin_ws/src
-  :~/catkin_ws/src$ git clone https://github.com/ghanimmukhtar/crustcrawler.git
+  :~/catkin_ws/src$ git clone https://github.com/robotsthatdream/crustcrawler.git
   :~/catkin_ws/src$ cd ..
   :~/catkin_ws$ source devel/setup.bash
   :~/catkin_ws$ catkin_make install
@@ -132,12 +132,12 @@
   :~/catkin_ws$ catkin_make -DCATKIN_WHITELIST_PACKAGES=rgbd_utils install
   ```
   
-- *camera_robot_calibration :*
+- *[camera_robot_calibration](https://github.com/robotsthatdream/camera_robot_calibration.git) :*
   
     In a terminal :
     ```
     :~$ cd ~/catkin_ws/src 
-    :~/catkin_ws/src$ git clone https://github.com/ghanimmukhtar/camera_robot_calibration.git
+    :~/catkin_ws/src$ git clone https://github.com/robotsthatdream/camera_robot_calibration.git
     :~/catkin_ws/src$ cd ..
     :~/catkin_ws$ source devel/setup.bash
     :~/catkin_ws$ catkin_make -DCATKIN_WHITELIST_PACKAGES=rgbd_utils install
@@ -146,4 +146,4 @@
 # Usage
   As indicated above, this repository serves as a class (named CALIBRATOR, check camera_robot_calibration.cpp in the repo) and one needs to code a node to instantiate the class and use it.
   
-  This is done and explained in the repository *[test_camera_robot_calibration]()*
+  This is done and explained in the repository *[test_camera_robot_calibration](https://github.com/robotsthatdream/test_camera_robot_calibration.git)*.
