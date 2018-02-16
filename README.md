@@ -1,4 +1,4 @@
-# camera_robot_calibration: short description
+# camera_robot_calibration
 
   This library was developed at ISIR lab, at the Sorbonne University with the sole objective of unifying the coordinate system between a 3D vision sensor and a robot. 
 
