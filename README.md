@@ -4,6 +4,19 @@
 
   Using ARUCO markers to find transformation matrix between kinect v1 or v2 cameras and the robot (BAXTER, or crustcrawler) thanks to forming and solving overdetermined  linear equation system. 
   
+  We are solving for six parameters : 
+  
+  ```math
+  t_x, t_y, t_z, t_r, t_p, t_y
+  ```
+  
+  so what we know is that these six parameters form a transformation matrix that links any point given in first cordinate system (camera frame system in this case) to its equivalent values in the other coordinate system (robot base frame in this case) as follows:
+  ```
+  P_robot = T_robot_camera * P_camera
+  ```
+  
+  Then when have enough points in robot frame ```P_robot``` and their values in camera frame ```P_camera``` we can solve for all unknown in ```T_robot_camera``` matrix
+  
   One can't use this library directly to do the calibration, one needs to instatiate an instant of the "calibrator" defined in the library. This is done in the repository [test_camera_robot_calibration](https://github.com/robotsthatdream/test_camera_robot_calibration.git) so after installing this library into one's catkin_ws, one needs to install the other repository and use that one to do the calibration.
 
 # Dependencies
